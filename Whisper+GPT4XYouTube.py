@@ -1,16 +1,10 @@
 import pytube
-import youtube_dl
 import moviepy.editor as mp
-import whisper
-import ffmpeg
-import tiktoken
-import random
 import numpy as np
+import whisper
+import time
 
-video_url = "https://www.youtube.com/watch?v=QWtI4WQrfC8"  # Replace with your desired YouTube video URL
-
-MAX_AUDIO_FILE_SIZE = 25 * 1024 * 1024
-SEGMENT_DURATION = 1800
+video_url = "https://www.youtube.com/watch?v=oi8WMPI-JRQ"  # Replace with your desired YouTube video URL
 
 def download_audio(video_url): 
     data = pytube.YouTube(video_url)
@@ -18,18 +12,19 @@ def download_audio(video_url):
     downloaded_file = audio.download()
     return downloaded_file
 
-input_file = download_audio(video_url)
-
-output_file = "audio.wav"
-
-def convert_audio(input_file, output_file):
+def mp4_to_wav(input_file, output_file):
     audio = mp.AudioFileClip(input_file)
     audio.write_audiofile(output_file, codec="pcm_s16le")
 
-convert_audio(input_file, output_file)
+tic = time.perf_counter()
+input_file = download_audio(video_url)
+output_file = "audio.wav"
+mp4_to_wav(input_file, output_file)
 
-from whisper import Whisper
-
-whisper_model = Whisper("base.en")  # Load the ASR model
+whisper_model = whisper.load_model("base.en")  # Load the ASR model
 result = whisper_model.transcribe("audio.wav")
-print(result["text"])
+with open('transcription.txt', 'w') as f:
+    f.write(result["text"])
+
+toc = time.perf_counter()
+print("Total time taken: {}".format(toc - tic))
